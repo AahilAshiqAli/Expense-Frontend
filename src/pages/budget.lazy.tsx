@@ -1,0 +1,159 @@
+import { createLazyFileRoute, useNavigate } from '@tanstack/react-router';
+import { useState } from 'react';
+import { useExpenseStore } from '@/store/useExpense';
+
+export const Route = createLazyFileRoute('/budget')({
+  component: ManageBudgets,
+});
+
+function ManageBudgets() {
+  const navigate = useNavigate();
+  const { budgetByCategory, setBudgetByCategory, setCategory } = useExpenseStore();
+  const [newCategory, setNewCategory] = useState('');
+  const [newBudget, setNewBudget] = useState('');
+  const [showAddCategory, setShowAddCategory] = useState(false);
+
+  const handleBudgetChange = (category: string, value: number | string) => {
+    if (value === '') return;
+    setBudgetByCategory({
+      [category]: Number(value),
+    });
+  };
+
+  const handleAddCategory = () => {
+    if (newCategory.trim() !== '' && newBudget.trim() !== '') {
+      setCategory([newCategory]); // Adding a new category to the list
+      setBudgetByCategory({ [newCategory]: Number(newBudget) });
+      setNewCategory('');
+      setNewBudget('');
+      setShowAddCategory(false);
+    }
+  };
+
+  const handleDeleteCategory = (category: string) => {
+    const updatedBudget = { ...budgetByCategory };
+    delete updatedBudget[category];
+    setBudgetByCategory(updatedBudget);
+  };
+
+  const handleSaveChanges = () => {
+    alert('Budget changes saved!');
+    navigate({ to: '/' });
+  };
+
+  const handleCancel = () => {
+    navigate({ to: '/' });
+  };
+
+  return (
+    <div className="mx-auto max-w-md rounded-lg bg-white p-6 shadow-lg">
+      <h2 className="mb-6 text-2xl font-bold text-gray-800">Manage Budgets</h2>
+
+      <div className="mb-6">
+        <div className="mb-4 flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-gray-700">Categories</h3>
+          {!showAddCategory && (
+            <button
+              type="button"
+              onClick={() => setShowAddCategory(true)}
+              className="rounded-md bg-green-500 px-3 py-1 text-sm text-white hover:bg-green-600"
+            >
+              Add New
+            </button>
+          )}
+        </div>
+
+        {Object.entries(budgetByCategory).map(([category, budget]) => (
+          <div key={category} className="mb-4 flex items-center">
+            <div className="flex-grow">
+              <label className="mb-1 block text-gray-700">{category}</label>
+              <div className="flex items-center">
+                <span className="mr-2 text-gray-500">$</span>
+                <input
+                  type="number"
+                  value={budget}
+                  onChange={(e) => handleBudgetChange(category, e.target.value)}
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-black"
+                  min="0"
+                  step="1"
+                />
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => handleDeleteCategory(category)}
+              className="ml-3 mt-3 px-4 py-4 text-2xl text-red-500 hover:text-red-700"
+              aria-label="Delete category"
+            >
+              ✕
+            </button>
+          </div>
+        ))}
+
+        {showAddCategory && (
+          <div className="mt-4 rounded-md border border-gray-200 bg-gray-50 p-4">
+            <h4 className="text-md mb-3 font-medium">Add New Category</h4>
+            <div className="mb-3">
+              <label className="mb-1 block text-gray-700">Category Name</label>
+              <input
+                type="text"
+                value={newCategory}
+                onChange={(e) => setNewCategory(e.target.value)}
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-black"
+                placeholder="e.g., Shopping"
+              />
+            </div>
+            <div className="mb-3">
+              <label className="mb-1 block text-gray-700">Monthly Budget</label>
+              <div className="flex items-center">
+                <span className="mr-2 text-gray-500">$</span>
+                <input
+                  type="number"
+                  value={newBudget}
+                  onChange={(e) => setNewBudget(e.target.value)}
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-black"
+                  min="0"
+                  step="1"
+                  placeholder="0"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end space-x-2">
+              <button
+                type="button"
+                onClick={() => setShowAddCategory(false)}
+                className="rounded-md bg-gray-300 px-3 py-1 text-gray-700 hover:bg-gray-400"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleAddCategory}
+                className="rounded-md bg-blue-500 px-3 py-1 text-white hover:bg-blue-600"
+              >
+                Add
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="mt-6 flex justify-between">
+        <button
+          type="button"
+          onClick={handleCancel}
+          className="rounded-md bg-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-400"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          onClick={handleSaveChanges}
+          className="rounded-md bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
+        >
+          Save Changes
+        </button>
+      </div>
+    </div>
+  );
+}
