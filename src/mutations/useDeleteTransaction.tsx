@@ -2,7 +2,7 @@ import { useMutation } from '@tanstack/react-query';
 import axios from 'axios';
 
 const deleteTransaction = async (id: number) => {
-  const response = await axios.delete(`http://localhost:3000/api/delete-transaction/${id}`);
+  const response = await axios.delete(`http://localhost:3000/api/v1/expense/transaction/${id}`);
   return response.data;
 };
 

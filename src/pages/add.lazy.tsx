@@ -2,12 +2,14 @@ import { useExpenseStore } from '@/store/useExpense';
 import { createLazyFileRoute, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { Link } from '@tanstack/react-router';
+import { useCreateTransaction } from '@/mutations/useCreateTransaction';
 
 export const Route = createLazyFileRoute('/add')({
   component: AddExpense,
 });
 
 function AddExpense() {
+  const mutation = useCreateTransaction();
   const navigate = useNavigate();
   const [expenseData, setExpenseData] = useState({
     name: '',
@@ -15,12 +17,11 @@ function AddExpense() {
     date: new Date().toISOString().split('T')[0],
     category: '',
   });
-  const { category, setCategory, addTransaction } = useExpenseStore();
-  const [categories, setCategories] = useState(category);
+  const { category, setCategory } = useExpenseStore();
   const [showNewCategory, setShowNewCategory] = useState(false);
   const [newCategory, setNewCategory] = useState('');
 
-  if (!categories) return <div>Loading...</div>;
+  if (!category) return <div>Loading...</div>;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -44,13 +45,12 @@ function AddExpense() {
 
   const handleAddCategory = () => {
     if (newCategory.trim() !== '') {
-      setCategories([...categories, newCategory]);
+      setCategory([newCategory]);
       setExpenseData({
         ...expenseData,
         category: newCategory,
       });
       setNewCategory('');
-      setCategory(categories);
       setShowNewCategory(false);
     }
   };
@@ -70,7 +70,7 @@ function AddExpense() {
         date: expenseDate,
         category: expenseData.category,
       };
-      addTransaction(transaction);
+      mutation.mutate(transaction);
       setExpenseData({
         name: '',
         amount: '',
@@ -162,7 +162,7 @@ function AddExpense() {
             <option value="" disabled>
               Select Category
             </option>
-            {categories.map((category, index) => (
+            {category.map((category, index) => (
               <option key={index} value={category}>
                 {category}
               </option>

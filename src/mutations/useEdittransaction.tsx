@@ -9,7 +9,7 @@ const editTransaction = async ({
   transaction: Transaction;
 }): Promise<Transaction> => {
   const response = await axios.put(
-    `http://localhost:3000/api/edit-transaction/${id}`,
+    `http://localhost:3000/api/v1/expense/transaction/${id}`,
     transaction,
     {
       headers: {

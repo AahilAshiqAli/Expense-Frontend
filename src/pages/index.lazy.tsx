@@ -1,5 +1,4 @@
 import { createLazyFileRoute } from '@tanstack/react-router';
-
 import { useMemo, useState } from 'react';
 import {
   ChevronDown,
@@ -26,19 +25,24 @@ export const Route = createLazyFileRoute('/')({
 });
 
 function ExpenseTracker() {
-  useAllTransactions({ page: 1 });
+  localStorage.setItem(
+    'token',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYwNTI0NTZjMzkyMjVhNDQxZDA4ZjJmIiwiZW1haWwiOiJ1c2VyQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ1MTY3NTQ2LCJleHAiOjE3NDc3NTk1NDZ9.o0qiKaBDnyP9xMrWMiWmZGU7xBEG-buTlD6gvyAc9Uo',
+  );
+  const { data: transactions, isLoading, isError } = useAllTransactions();
   const activePeriod = useState('This Month')[0];
 
-  const { transactions, allTransactions, category, savings, spendingByCategory, budgetByCategory } =
+  const { allTransactions, category, savings, spendingByCategory, budgetByCategory } =
     useExpenseStore();
 
-  // ponly used for expenses becuase it is used multiple times in the code and not sustainable to calculate each time on the fly
-  const expenses = useMemo(() => calculateExpenses(transactions), [transactions]);
+  if (isLoading) return <div>Loading...</div>;
+
+  if (isError) return <div>Error loading transactions.</div>;
+
+  // only used for expenses becuase it is used multiple times in the code and not sustainable to calculate each time on the fly
+  const expenses = useMemo(() => calculateExpenses(transactions || []), [transactions]);
 
   const chartData: ChartData[] = calculateByMonth(allTransactions);
-
-  if (!transactions) return <div>Loading...</div>;
-
   const categoryColors: { [key: string]: string } = {};
   if (category) {
     const colors = ['bg-blue-500', 'bg-purple-500', 'bg-pink-500', 'bg-yellow-500'];
@@ -68,7 +72,7 @@ function ExpenseTracker() {
           </div>
           <h3 className="mb-1 text-sm text-gray-500">Total Balance</h3>
           <p className="text-2xl font-bold text-gray-800">
-            {Currency(calculateBalance(transactions)) ?? Currency(2589.43)}{' '}
+            {Currency(calculateBalance(transactions || []))}
           </p>
         </div>
 
@@ -82,9 +86,7 @@ function ExpenseTracker() {
             </span>
           </div>
           <h3 className="mb-1 text-sm text-gray-500">Total Expenses</h3>
-          <p className="text-2xl font-bold text-gray-800">
-            {Currency(expenses) || Currency(1450.2)}{' '}
-          </p>
+          <p className="text-2xl font-bold text-gray-800">{Currency(expenses)}</p>
         </div>
 
         <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
@@ -98,7 +100,7 @@ function ExpenseTracker() {
           </div>
           <h3 className="mb-1 text-sm text-gray-500">Total Income</h3>
           <p className="text-2xl font-bold text-gray-800">
-            {Currency(calculateIncome(transactions)) || Currency(1450.2)}
+            {Currency(calculateIncome(transactions || []))}
           </p>
         </div>
 
@@ -162,37 +164,38 @@ function ExpenseTracker() {
             </div>
 
             <div className="space-y-4">
-              {transactions.map((transaction) => (
-                <div
-                  key={transaction.id}
-                  className="flex items-center justify-between border-b border-gray-100 py-3 last:border-0"
-                >
-                  <div className="flex items-center">
-                    <div
-                      className={`flex h-10 w-10 items-center justify-center rounded-full ${
-                        transaction.type === 'income'
-                          ? 'bg-green-100 text-green-600'
-                          : 'bg-red-100 text-red-600'
+              {transactions &&
+                transactions.map((transaction) => (
+                  <div
+                    key={transaction.id}
+                    className="flex items-center justify-between border-b border-gray-100 py-3 last:border-0"
+                  >
+                    <div className="flex items-center">
+                      <div
+                        className={`flex h-10 w-10 items-center justify-center rounded-full ${
+                          transaction.type === 'income'
+                            ? 'bg-green-100 text-green-600'
+                            : 'bg-red-100 text-red-600'
+                        }`}
+                      >
+                        {transaction.type === 'income' ? '+' : '-'}
+                      </div>
+                      <div className="ml-4">
+                        <p className="text-sm font-medium text-gray-800">{transaction.name}</p>
+                        <p className="text-xs text-gray-500">
+                          {FormatDate(transaction.date)} • {transaction.category}
+                        </p>
+                      </div>
+                    </div>
+                    <span
+                      className={`font-medium ${
+                        transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
                       }`}
                     >
-                      {transaction.type === 'income' ? '+' : '-'}
-                    </div>
-                    <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-800">{transaction.name}</p>
-                      <p className="text-xs text-gray-500">
-                        {FormatDate(transaction.date)} • {transaction.category}
-                      </p>
-                    </div>
+                      {Currency(transaction.price) || Currency(0)}
+                    </span>
                   </div>
-                  <span
-                    className={`font-medium ${
-                      transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
-                    }`}
-                  >
-                    {Currency(transaction.price) || Currency(0)}
-                  </span>
-                </div>
-              ))}
+                ))}
             </div>
           </div>
         </div>

@@ -3,12 +3,14 @@ import { createLazyFileRoute, useNavigate } from '@tanstack/react-router';
 import { useExpenseStore } from '@/store/useExpense';
 import { useState } from 'react';
 import { Link } from '@tanstack/react-router';
+import { useCreateTransaction } from '@/mutations/useCreateTransaction';
 
 export const Route = createLazyFileRoute('/income')({
   component: AddIncomeComponent,
 });
 
 function AddIncomeComponent() {
+  const mutation = useCreateTransaction();
   const [isRecurring, setIsRecurring] = useState(false);
   const [_, setRecurringType] = useState('');
   const navigate = useNavigate();
@@ -18,12 +20,11 @@ function AddIncomeComponent() {
     date: new Date().toISOString().split('T')[0],
     category: '',
   });
-  const { category, setCategory, addTransaction } = useExpenseStore();
-  const [categories, setCategories] = useState(category);
+  const { category, setCategory } = useExpenseStore();
   const [showNewCategory, setShowNewCategory] = useState(false);
   const [newCategory, setNewCategory] = useState('');
 
-  if (!categories) return <div>Loading...</div>;
+  if (!category) return <div>Loading...</div>;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -47,13 +48,12 @@ function AddIncomeComponent() {
 
   const handleAddCategory = () => {
     if (newCategory.trim() !== '') {
-      setCategories([...categories, newCategory]);
+      setCategory([newCategory]);
       setIncomeData({
         ...incomeData,
         category: newCategory,
       });
       setNewCategory('');
-      setCategory(categories);
       setShowNewCategory(false);
     }
   };
@@ -73,7 +73,7 @@ function AddIncomeComponent() {
         date: incomeDate,
         category: incomeData.category,
       };
-      addTransaction(transaction);
+      mutation.mutate(transaction);
       setIncomeData({
         name: '',
         amount: '',
@@ -165,7 +165,7 @@ function AddIncomeComponent() {
             <option value="" disabled>
               Select Category
             </option>
-            {categories.map((category, index) => (
+            {category.map((category, index) => (
               <option key={index} value={category}>
                 {category}
               </option>
