@@ -1,29 +1,45 @@
 import { createLazyFileRoute, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
-import { useExpenseStore } from '@/store/useExpense';
+import { useCreateCategory } from '@/mutations/useCreateCategory';
+import useCategories from '@/hooks/useCategories';
 
 export const Route = createLazyFileRoute('/budget')({
   component: ManageBudgets,
 });
 
+const userId = '680d07785da0e057a10ccca6';
+
 function ManageBudgets() {
   const navigate = useNavigate();
-  const { budgetByCategory, setBudgetByCategory, setCategory } = useExpenseStore();
   const [newCategory, setNewCategory] = useState('');
   const [newBudget, setNewBudget] = useState('');
   const [showAddCategory, setShowAddCategory] = useState(false);
+  const { data: categories } = useCategories();
+  const mutationCategory = useCreateCategory();
+  console.log('categories', categories);
+  const budgetByCategory =
+    categories?.reduce(
+      (acc, category) => {
+        acc[category.name] = category.monthlyLimit;
+        return acc;
+      },
+      {} as Record<string, number>,
+    ) ?? {};
 
   const handleBudgetChange = (category: string, value: number | string) => {
     if (value === '') return;
-    setBudgetByCategory({
-      [category]: Number(value),
-    });
+    console.log('need to update here');
   };
 
   const handleAddCategory = () => {
     if (newCategory.trim() !== '' && newBudget.trim() !== '') {
-      setCategory([newCategory]); // Adding a new category to the list
-      setBudgetByCategory({ [newCategory]: Number(newBudget) });
+      const category: Category = {
+        name: newCategory,
+        monthlyLimit: Number(newBudget),
+        userId: userId,
+      };
+      mutationCategory.mutate(category);
+
       setNewCategory('');
       setNewBudget('');
       setShowAddCategory(false);
@@ -31,9 +47,7 @@ function ManageBudgets() {
   };
 
   const handleDeleteCategory = (category: string) => {
-    const updatedBudget = { ...budgetByCategory };
-    delete updatedBudget[category];
-    setBudgetByCategory(updatedBudget);
+    console.log('need to delete here');
   };
 
   const handleSaveChanges = () => {
@@ -71,7 +85,7 @@ function ManageBudgets() {
                 <span className="mr-2 text-gray-500">$</span>
                 <input
                   type="number"
-                  value={budget}
+                  value={budget ?? 0}
                   onChange={(e) => handleBudgetChange(category, e.target.value)}
                   className="w-full rounded-md border border-gray-300 px-3 py-2 text-black"
                   min="0"

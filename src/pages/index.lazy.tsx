@@ -10,7 +10,7 @@ import {
   Filter,
 } from 'lucide-react';
 import BarChart from '@/components/BarChart';
-import { useExpenseStore } from '@/store/useExpense';
+import calculateSpendingByCategory from '@/utils/spendingByCategory';
 import { Currency, Currency1 } from '@/utils/Currency';
 import { Link } from '@tanstack/react-router';
 import FormatDate from '@/utils/FormatDate';
@@ -19,6 +19,8 @@ import useAllTransactions from '@/hooks/useAllTransactions';
 import { ChartData } from '@/components/BarChart';
 import calculateByMonth from '@/utils/CalculateByMonth';
 import { calculateBalance, calculateExpenses, calculateIncome } from '@/utils/calculateHeader';
+import categoryUtils from '@/utils/categoryUtils';
+import useCategories from '@/hooks/useCategories';
 
 export const Route = createLazyFileRoute('/')({
   component: ExpenseTracker,
@@ -27,22 +29,29 @@ export const Route = createLazyFileRoute('/')({
 function ExpenseTracker() {
   localStorage.setItem(
     'token',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYwNTI0NTZjMzkyMjVhNDQxZDA4ZjJmIiwiZW1haWwiOiJ1c2VyQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ1MTY3NTQ2LCJleHAiOjE3NDc3NTk1NDZ9.o0qiKaBDnyP9xMrWMiWmZGU7xBEG-buTlD6gvyAc9Uo',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4MGQwNzc4NWRhMGUwNTdhMTBjY2NhNiIsImVtYWlsIjoiam9obkBleGFtcGxlLmNvbSIsImlhdCI6MTc0NTY4NDM0NCwiZXhwIjoxNzQ4Mjc2MzQ0fQ.JWuxQ0F-weWkxrnAsqXbJgzx2oELp-FtUxYnQFEYXto',
   );
-  const { data: transactions, isLoading, isError } = useAllTransactions();
+  const { data, isLoading, isError } = useAllTransactions();
+  let transactions: Transaction[] = [];
+  if (data) {
+    transactions = data;
+  }
   const activePeriod = useState('This Month')[0];
 
-  const { allTransactions, category, savings, spendingByCategory, budgetByCategory } =
-    useExpenseStore();
+  const category = categoryUtils(transactions);
+  const { data: categories } = useCategories();
 
-  if (isLoading) return <div>Loading...</div>;
+  const budgetByCategory =
+    categories?.map((category) => ({
+      [category.name]: category.monthlyLimit,
+    })) ?? {};
 
-  if (isError) return <div>Error loading transactions.</div>;
+  const spendingByCategory: Record<string, number> = calculateSpendingByCategory(transactions);
 
   // only used for expenses becuase it is used multiple times in the code and not sustainable to calculate each time on the fly
   const expenses = useMemo(() => calculateExpenses(transactions || []), [transactions]);
 
-  const chartData: ChartData[] = calculateByMonth(allTransactions);
+  const chartData: ChartData[] = calculateByMonth(transactions || []);
   const categoryColors: { [key: string]: string } = {};
   if (category) {
     const colors = ['bg-blue-500', 'bg-purple-500', 'bg-pink-500', 'bg-yellow-500'];
@@ -51,6 +60,9 @@ function ExpenseTracker() {
     }
   }
 
+  if (isLoading) return <div>Loading...</div>;
+
+  if (isError) return <div>Error loading transactions.</div>;
   return (
     <>
       <div className="flex w-full items-center justify-end p-4 ">
@@ -116,7 +128,7 @@ function ExpenseTracker() {
             </div>
           </div>
           <h3 className="mb-1 text-sm text-gray-500">Savings Rate</h3>
-          <p className="text-2xl font-bold text-gray-800">{savings || 0.0}% </p>
+          <p className="text-2xl font-bold text-gray-800">{0.0}% </p>
         </div>
       </div>
 
@@ -192,7 +204,7 @@ function ExpenseTracker() {
                         transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
                       }`}
                     >
-                      {Currency(transaction.price) || Currency(0)}
+                      {Currency(transaction.amount) || Currency(0)}
                     </span>
                   </div>
                 ))}
@@ -255,23 +267,28 @@ function ExpenseTracker() {
             </div>
 
             <div className="space-y-5">
-              {Object.entries(budgetByCategory)
-                .filter(([cat, _]: [string, number]) => spendingByCategory[cat] > 0)
-                .map(([cat, budget]: [string, number]) => (
-                  <div>
-                    <div className="mb-1 flex justify-between">
-                      <span className="text-sm text-gray-700">{cat}</span>
-                      <span className="text-sm font-medium text-gray-800">
-                        {Currency1(spendingByCategory[cat])} / {Currency1(budget)}
-                      </span>
+              {(Object.entries(budgetByCategory) as [string, number][])
+                .filter(([cat]) => spendingByCategory[cat] > 0)
+                .map(([cat, budget]) => {
+                  const spending = spendingByCategory[cat];
+                  const percentage = Math.min((spending / budget) * 100, 100); // Cap at 100%
+                  return (
+                    <div key={cat}>
+                      <div className="mb-1 flex justify-between">
+                        <span className="text-sm text-gray-700">{cat}</span>
+                        <span className="text-sm font-medium text-gray-800">
+                          {Currency1(spending)} / {Currency1(budget)}
+                        </span>
+                      </div>
+                      <div className="h-2.5 w-full rounded-full bg-gray-100">
+                        <div
+                          className={`h-2.5 ${Colors(spending, budget)} rounded-full ${categoryColors[cat] || 'bg-green-500'}`}
+                          style={{ width: `${percentage}%` }}
+                        ></div>
+                      </div>
                     </div>
-                    <div className="h-2.5 w-full rounded-full bg-gray-100">
-                      <div
-                        className={`h-2.5 ${Colors(spendingByCategory[cat], budget)} rounded-full ${categoryColors[cat] || 'bg-green-500'}`}
-                      ></div>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
 
               <Link to="/budget">
                 <button className="mt-2 w-full rounded-lg border border-gray-200 py-3 text-center text-sm font-medium text-indigo-600">

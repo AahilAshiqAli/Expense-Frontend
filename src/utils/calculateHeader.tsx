@@ -2,11 +2,12 @@ import { spendingBycategory } from '@/store/useExpense';
 
 export const calculateBalance = (transactions: Transaction[]): number => {
   let balance: number = 0;
+
   for (let i = 0; i < transactions.length; i++) {
     if (transactions[i].type === 'expense') {
-      balance -= transactions[i].price;
+      balance -= transactions[i].amount;
     } else if (transactions[i].type === 'income') {
-      balance += transactions[i].price;
+      balance += transactions[i].amount;
     }
   }
 
@@ -17,7 +18,7 @@ export const calculateExpenses = (transactions: Transaction[]): number => {
   let expenses: number = 0;
   for (let i = 0; i < transactions.length; i++) {
     if (transactions[i].type === 'expense') {
-      expenses += transactions[i].price;
+      expenses += transactions[i].amount;
     }
   }
 
@@ -28,7 +29,7 @@ export const calculateIncome = (transactions: Transaction[]): number => {
   let income: number = 0;
   for (let i = 0; i < transactions.length; i++) {
     if (transactions[i].type === 'income') {
-      income += transactions[i].price;
+      income += transactions[i].amount;
     }
   }
 
@@ -49,9 +50,9 @@ export const calculateSpendingByCategory = (transactions: Transaction[]) => {
   const spendingByCategory: spendingBycategory = {};
   for (let i = 0; i < transactions.length; i++) {
     if (transactions[i].category in Object.keys(spendingByCategory)) {
-      spendingByCategory[transactions[i].category] += transactions[i].price;
+      spendingByCategory[transactions[i].category] += transactions[i].amount;
     } else {
-      spendingByCategory[transactions[i].category] = transactions[i].price;
+      spendingByCategory[transactions[i].category] = transactions[i].amount;
     }
   }
   return spendingByCategory;

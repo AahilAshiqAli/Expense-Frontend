@@ -1,15 +1,16 @@
-import { useExpenseStore } from '@/store/useExpense';
 import { createLazyFileRoute, useNavigate } from '@tanstack/react-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from '@tanstack/react-router';
 import { useCreateTransaction } from '@/mutations/useCreateTransaction';
+import useCategories from '@/hooks/useCategories';
 
 export const Route = createLazyFileRoute('/add')({
   component: AddExpense,
 });
 
+const userID = '680d07785da0e057a10ccca6';
 function AddExpense() {
-  const mutation = useCreateTransaction();
+  const mutationTransaction = useCreateTransaction();
   const navigate = useNavigate();
   const [expenseData, setExpenseData] = useState({
     name: '',
@@ -17,11 +18,10 @@ function AddExpense() {
     date: new Date().toISOString().split('T')[0],
     category: '',
   });
-  const { category, setCategory } = useExpenseStore();
+  const { data } = useCategories();
+  const [categories, setCategories] = useState<string[]>([]);
   const [showNewCategory, setShowNewCategory] = useState(false);
   const [newCategory, setNewCategory] = useState('');
-
-  if (!category) return <div>Loading...</div>;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -45,32 +45,47 @@ function AddExpense() {
 
   const handleAddCategory = () => {
     if (newCategory.trim() !== '') {
-      setCategory([newCategory]);
       setExpenseData({
         ...expenseData,
         category: newCategory,
       });
+      setCategories([...categories, newCategory]);
       setNewCategory('');
       setShowNewCategory(false);
     }
   };
 
+  useEffect(() => {
+    if (data) {
+      const cat: string[] = [];
+      for (let i = 0; i < data.length; i++) {
+        cat.push(data[i].name);
+      }
+      setCategories(cat);
+    }
+  }, [data]);
+
   // Simulated functions - these would connect to your app state/backend in the real implementation
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Simulate successful submission
     const date = new Date();
     const expenseDate = new Date(expenseData.date);
-    if (expenseData.name && expenseData.amount !== '' && category && date >= expenseDate) {
+    if (
+      expenseData.name &&
+      expenseData.amount !== '' &&
+      expenseData.category &&
+      date >= expenseDate
+    ) {
       const transaction: Transaction = {
         id: 1,
         name: expenseData.name,
         type: 'expense',
-        price: Number(expenseData.amount),
+        amount: Number(expenseData.amount),
         date: expenseDate,
         category: expenseData.category,
+        userId: userID,
       };
-      mutation.mutate(transaction);
+      mutationTransaction.mutate(transaction);
       setExpenseData({
         name: '',
         amount: '',
@@ -78,12 +93,12 @@ function AddExpense() {
         category: '',
       });
       alert('Expense added: ' + JSON.stringify(expenseData, null, 2));
-      navigate({ to: '/' });
+      navigate({ to: '/', replace: true });
     } else if (!expenseData.name) {
       alert('Expense name is required');
     } else if (!expenseData.amount) {
       alert('Expense amount is required');
-    } else if (!category) {
+    } else if (!expenseData.category) {
       alert('Category is required');
     } else if (date < expenseDate) {
       alert('Expense date cannot be in the future');
@@ -159,14 +174,18 @@ function AddExpense() {
             className="w-full rounded-md border border-gray-300 px-3 py-2 text-black"
             required={!showNewCategory}
           >
+            {/* Here, required is used to ensure that when showNewCategory is false, user is not giving any new Category then user needs to fill this field
+            Else not required*/}
+
             <option value="" disabled>
               Select Category
             </option>
-            {category.map((category, index) => (
-              <option key={index} value={category}>
-                {category}
-              </option>
-            ))}
+            {categories !== undefined &&
+              categories.map((category, index) => (
+                <option key={index} value={category}>
+                  {category}
+                </option>
+              ))}
             <option value="add_new">+ Add New Category</option>
           </select>
         </div>

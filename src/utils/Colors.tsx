@@ -1,6 +1,6 @@
 export default function Colors(spend: number, budget: number) {
   const ratio: number = spend / budget;
-  console.log(ratio);
+
   if (ratio >= 1) {
     return 'w-full';
   } else if (ratio >= 0.8) {

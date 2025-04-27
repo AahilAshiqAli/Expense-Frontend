@@ -7,8 +7,17 @@ declare global {
     id: number;
     name: string;
     type: 'expense' | 'income';
-    price: number;
+    amount: number;
     date: Date;
     category: string;
+    userId: string;
   }
+
+  interface Category {
+    name: string;
+    monthlyLimit: number;
+    userId: string;
+  }
+
+  const userID = '680d07785da0e057a10ccca6';
 }

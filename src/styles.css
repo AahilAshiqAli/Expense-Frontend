@@ -4,9 +4,9 @@
 /* @custom-variant dark (&:is(.dark *)); */
 
 @theme inline {
-  --color-primary: #d05c94;
-  --color-primary-100: #a0446c;
-  --color-primary-200: #872b57;
+  --color-primary: #2596be;
+  --color-primary-100: #2596bf;
+  --color-primary-200: #2596ce;
   --color-secondary: #314261;
   --font-body: Inter, sans-serif;
   --font-heading: Georgia, serif;
