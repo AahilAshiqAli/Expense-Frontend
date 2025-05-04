@@ -14,6 +14,7 @@ declare global {
   }
 
   interface Category {
+    _id?: number;
     name: string;
     monthlyLimit: number;
     userId: string;

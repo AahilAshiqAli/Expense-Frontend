@@ -7,7 +7,7 @@ import {
   PieChart,
   ArrowUpRight,
   ArrowDownRight,
-  Filter,
+  // Filter,
 } from 'lucide-react';
 import BarChart from '@/components/BarChart';
 import calculateSpendingByCategory from '@/utils/spendingByCategory';
@@ -18,33 +18,40 @@ import Colors from '@/utils/Colors';
 import useAllTransactions from '@/hooks/useAllTransactions';
 import { ChartData } from '@/components/BarChart';
 import calculateByMonth from '@/utils/CalculateByMonth';
-import { calculateBalance, calculateExpenses, calculateIncome } from '@/utils/calculateHeader';
+import {
+  calculateBalance,
+  calculateExpenses,
+  calculateIncome,
+  calculateSavingRate,
+} from '@/utils/calculateHeader';
 import categoryUtils from '@/utils/categoryUtils';
 import useCategories from '@/hooks/useCategories';
+import { useNavigate } from '@tanstack/react-router';
 
 export const Route = createLazyFileRoute('/')({
   component: ExpenseTracker,
 });
 
 function ExpenseTracker() {
+  const navigate = useNavigate();
   localStorage.setItem(
     'token',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4MGQwNzc4NWRhMGUwNTdhMTBjY2NhNiIsImVtYWlsIjoiam9obkBleGFtcGxlLmNvbSIsImlhdCI6MTc0NTY4NDM0NCwiZXhwIjoxNzQ4Mjc2MzQ0fQ.JWuxQ0F-weWkxrnAsqXbJgzx2oELp-FtUxYnQFEYXto',
   );
-  const { data, isLoading, isError } = useAllTransactions();
-  let transactions: Transaction[] = [];
-  if (data) {
-    transactions = data;
-  }
+  const { data: transactions = [], isLoading, isError } = useAllTransactions();
   const activePeriod = useState('This Month')[0];
 
   const category = categoryUtils(transactions);
   const { data: categories } = useCategories();
 
-  const budgetByCategory =
-    categories?.map((category) => ({
-      [category.name]: category.monthlyLimit,
-    })) ?? {};
+  const budgetByCategory: Record<string, number> = {};
+  // if (1 == 1) {
+  //   navigate({ to: '/login', replace: true });
+  // }
+  if (!categories) return <div>Loading...</div>;
+  for (let i = 0; i < categories.length; i++) {
+    budgetByCategory[categories[i].name] = categories[i].monthlyLimit;
+  }
 
   const spendingByCategory: Record<string, number> = calculateSpendingByCategory(transactions);
 
@@ -52,7 +59,7 @@ function ExpenseTracker() {
   const expenses = useMemo(() => calculateExpenses(transactions || []), [transactions]);
 
   const chartData: ChartData[] = calculateByMonth(transactions || []);
-  const categoryColors: { [key: string]: string } = {};
+  const categoryColors: Record<string, string> = {};
   if (category) {
     const colors = ['bg-blue-500', 'bg-purple-500', 'bg-pink-500', 'bg-yellow-500'];
     for (let i = 0; i < category.length; i++) {
@@ -63,14 +70,15 @@ function ExpenseTracker() {
   if (isLoading) return <div>Loading...</div>;
 
   if (isError) return <div>Error loading transactions.</div>;
+
   return (
     <>
-      <div className="flex w-full items-center justify-end p-4 ">
+      {/* <div className="flex w-full items-center justify-end p-4 ">
         <button className="flex items-center rounded-lg border border-gray-200 bg-white px-8 py-2 text-sm font-medium text-gray-700">
           <Filter className="mr-2 h-8 w-8" />
           Filter
         </button>
-      </div>
+      </div> */}
 
       <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
@@ -128,7 +136,9 @@ function ExpenseTracker() {
             </div>
           </div>
           <h3 className="mb-1 text-sm text-gray-500">Savings Rate</h3>
-          <p className="text-2xl font-bold text-gray-800">{0.0}% </p>
+          <p className="text-2xl font-bold text-gray-800">
+            {calculateSavingRate(transactions || [])}%{' '}
+          </p>
         </div>
       </div>
 
@@ -267,7 +277,7 @@ function ExpenseTracker() {
             </div>
 
             <div className="space-y-5">
-              {(Object.entries(budgetByCategory) as [string, number][])
+              {Object.entries(budgetByCategory)
                 .filter(([cat]) => spendingByCategory[cat] > 0)
                 .map(([cat, budget]) => {
                   const spending = spendingByCategory[cat];

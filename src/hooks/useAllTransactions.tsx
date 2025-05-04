@@ -13,6 +13,7 @@ export default function useAllTransactions() {
       const response = await axios.get<Transaction[]>(
         `http://localhost:3000/api/v1/expense/transactions/${userID}`,
         {
+          withCredentials: true,
           headers: {
             Authorization: `Bearer ${token}`,
           },

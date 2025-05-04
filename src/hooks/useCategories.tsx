@@ -20,7 +20,7 @@ export default function useCategories() {
       );
       return response.data;
     },
-    refetchInterval: 5000,
+    refetchInterval: 500000,
   });
 
   return query; // used to call query.loading or query.error or query.data

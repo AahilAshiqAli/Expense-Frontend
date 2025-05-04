@@ -1,4 +1,4 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 
 // const token = localStorage.getItem('token');
@@ -21,9 +21,11 @@ const createTransaction = async (transaction: Transaction) => {
 };
 
 export function useCreateTransaction() {
+  const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: createTransaction,
     onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
       console.log('Transaction created successfully: ', data);
     },
   });

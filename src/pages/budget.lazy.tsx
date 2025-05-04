@@ -2,6 +2,11 @@ import { createLazyFileRoute, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useCreateCategory } from '@/mutations/useCreateCategory';
 import useCategories from '@/hooks/useCategories';
+import { useEditCategory } from '@/mutations/useEditCategory';
+import { useDeleteCategory } from '@/mutations/useDeleteCategory';
+import SuggestionsBox from '@/components/ui/SuggestionsBox';
+import categoryUtils from '@/utils/categoryUtils';
+import useAllTransactions from '@/hooks/useAllTransactions';
 
 export const Route = createLazyFileRoute('/budget')({
   component: ManageBudgets,
@@ -16,6 +21,9 @@ function ManageBudgets() {
   const [showAddCategory, setShowAddCategory] = useState(false);
   const { data: categories } = useCategories();
   const mutationCategory = useCreateCategory();
+  const mutationEditCategory = useEditCategory();
+  const mutationDeleteCategory = useDeleteCategory();
+  const { data: transactions } = useAllTransactions();
   console.log('categories', categories);
   const budgetByCategory =
     categories?.reduce(
@@ -28,7 +36,22 @@ function ManageBudgets() {
 
   const handleBudgetChange = (category: string, value: number | string) => {
     if (value === '') return;
-    console.log('need to update here');
+    if (categories === undefined) return;
+    let categoryToFindId: number | undefined;
+    for (let i = 0; i < categories?.length; i++) {
+      if (categories[i].name === category) {
+        categoryToFindId = categories[i]._id;
+        break;
+      }
+    }
+    if (!categoryToFindId) return;
+    const categoryToUpdate: Category = {
+      name: category,
+      monthlyLimit: Number(value),
+      userId: userId,
+    };
+
+    mutationEditCategory.mutate({ id: categoryToFindId, category: categoryToUpdate });
   };
 
   const handleAddCategory = () => {
@@ -47,6 +70,16 @@ function ManageBudgets() {
   };
 
   const handleDeleteCategory = (category: string) => {
+    if (categories === undefined) return;
+    let categoryToFindId: number | undefined;
+    for (let i = 0; i < categories?.length; i++) {
+      if (categories[i].name === category) {
+        categoryToFindId = categories[i]._id;
+        break;
+      }
+    }
+    if (!categoryToFindId) return;
+    mutationDeleteCategory.mutate(categoryToFindId);
     console.log('need to delete here');
   };
 
@@ -57,6 +90,23 @@ function ManageBudgets() {
 
   const handleCancel = () => {
     navigate({ to: '/' });
+  };
+
+  const onAddCategories = (suggestion: string) => {
+    setNewCategory(suggestion);
+    setShowAddCategory(true);
+  };
+
+  const giveSuggestions = (transactions: Transaction[]): string[] => {
+    const suggestions: string[] = categoryUtils(transactions);
+    const cat: string[] = [];
+    if (categories) {
+      for (let i = 0; i < categories.length; i++) {
+        cat.push(categories[i].name);
+      }
+      return suggestions.filter((suggestion) => !cat.includes(suggestion));
+    }
+    return [];
   };
 
   return (
@@ -151,6 +201,15 @@ function ManageBudgets() {
           </div>
         )}
       </div>
+
+      {transactions && (
+        <div className="mt-6">
+          <SuggestionsBox
+            onAddCategories={onAddCategories}
+            suggestions={giveSuggestions(transactions)}
+          />
+        </div>
+      )}
 
       <div className="mt-6 flex justify-between">
         <button

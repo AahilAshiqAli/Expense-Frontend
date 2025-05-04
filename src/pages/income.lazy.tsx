@@ -1,18 +1,16 @@
-import RecurringIncome from '@/components/RecurringIncome';
 import { createLazyFileRoute, useNavigate } from '@tanstack/react-router';
-import { useExpenseStore } from '@/store/useExpense';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from '@tanstack/react-router';
 import { useCreateTransaction } from '@/mutations/useCreateTransaction';
+import useCategories from '@/hooks/useCategories';
 
 export const Route = createLazyFileRoute('/income')({
   component: AddIncomeComponent,
 });
 
+const userID = '680d07785da0e057a10ccca6';
 function AddIncomeComponent() {
-  const mutation = useCreateTransaction();
-  const [isRecurring, setIsRecurring] = useState(false);
-  const [_, setRecurringType] = useState('');
+  const mutationTransaction = useCreateTransaction();
   const navigate = useNavigate();
   const [incomeData, setIncomeData] = useState({
     name: '',
@@ -20,11 +18,10 @@ function AddIncomeComponent() {
     date: new Date().toISOString().split('T')[0],
     category: '',
   });
-  const { category, setCategory } = useExpenseStore();
+  const { data } = useCategories();
+  const [categories, setCategories] = useState<string[]>([]);
   const [showNewCategory, setShowNewCategory] = useState(false);
   const [newCategory, setNewCategory] = useState('');
-
-  if (!category) return <div>Loading...</div>;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -48,15 +45,25 @@ function AddIncomeComponent() {
 
   const handleAddCategory = () => {
     if (newCategory.trim() !== '') {
-      setCategory([newCategory]);
       setIncomeData({
         ...incomeData,
         category: newCategory,
       });
+      setCategories([...categories, newCategory]);
       setNewCategory('');
       setShowNewCategory(false);
     }
   };
+
+  useEffect(() => {
+    if (data) {
+      const cat: string[] = [];
+      for (let i = 0; i < data.length; i++) {
+        cat.push(data[i].name);
+      }
+      setCategories(cat);
+    }
+  }, [data]);
 
   // Simulated functions - these would connect to your app state/backend in the real implementation
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -69,11 +76,12 @@ function AddIncomeComponent() {
         id: 1,
         name: incomeData.name,
         type: 'income',
-        price: Number(incomeData.amount),
+        amount: Number(incomeData.amount),
         date: incomeDate,
         category: incomeData.category,
+        userId: userID,
       };
-      mutation.mutate(transaction);
+      mutationTransaction.mutate(transaction);
       setIncomeData({
         name: '',
         amount: '',
@@ -81,7 +89,7 @@ function AddIncomeComponent() {
         category: '',
       });
       alert('Income added: ' + JSON.stringify(incomeData, null, 2));
-      navigate({ to: '/' });
+      navigate({ to: '/', replace: true });
     } else if (!incomeData.name) {
       alert('Income name is required');
     } else if (!incomeData.amount) {
@@ -165,7 +173,7 @@ function AddIncomeComponent() {
             <option value="" disabled>
               Select Category
             </option>
-            {category.map((category, index) => (
+            {categories.map((category, index) => (
               <option key={index} value={category}>
                 {category}
               </option>
@@ -194,14 +202,6 @@ function AddIncomeComponent() {
             </div>
           </div>
         )}
-
-        <div className="mb-4">
-          <RecurringIncome
-            isRecurring={isRecurring}
-            setRecurringType={setRecurringType}
-            setIsRecurring={setIsRecurring}
-          />
-        </div>
 
         <div className="mt-6 flex justify-between">
           <Link to="/">

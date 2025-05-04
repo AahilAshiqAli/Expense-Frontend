@@ -1,5 +1,3 @@
-import { spendingBycategory } from '@/store/useExpense';
-
 export const calculateBalance = (transactions: Transaction[]): number => {
   let balance: number = 0;
 
@@ -47,7 +45,7 @@ export const calculateCatergory = (transactions: Transaction[]): string[] => {
 };
 
 export const calculateSpendingByCategory = (transactions: Transaction[]) => {
-  const spendingByCategory: spendingBycategory = {};
+  const spendingByCategory: Record<string, number> = {};
   for (let i = 0; i < transactions.length; i++) {
     if (transactions[i].category in Object.keys(spendingByCategory)) {
       spendingByCategory[transactions[i].category] += transactions[i].amount;
@@ -61,5 +59,6 @@ export const calculateSpendingByCategory = (transactions: Transaction[]) => {
 export const calculateSavingRate = (transactions: Transaction[]) => {
   const balance = calculateBalance(transactions);
   const income = calculateIncome(transactions);
-  return income === 0 ? 0 : (balance / income) * 100;
+  const saving = income === 0 ? 0 : (balance / income) * 100;
+  return saving.toFixed(2);
 };

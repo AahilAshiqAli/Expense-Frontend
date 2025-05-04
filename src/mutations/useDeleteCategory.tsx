@@ -1,32 +1,27 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 
-// const token = localStorage.getItem('token');
-
 const token =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4MGQwNzc4NWRhMGUwNTdhMTBjY2NhNiIsImVtYWlsIjoiam9obkBleGFtcGxlLmNvbSIsImlhdCI6MTc0NTY4NDM0NCwiZXhwIjoxNzQ4Mjc2MzQ0fQ.JWuxQ0F-weWkxrnAsqXbJgzx2oELp-FtUxYnQFEYXto';
 
-const createCategory = async (category: Category) => {
-  const response = await axios.post(`http://localhost:3000/api/v1/expense/category/`, category, {
+const deleteCategory = async (id: number) => {
+  const response = await axios.delete(`http://localhost:3000/api/v1/expense/category/${id}`, {
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
     },
   });
-  // in axios, it handles error automatically. so we don't need to handle error here.
   return response.data;
 };
 
-export function useCreateCategory() {
+export function useDeleteCategory() {
   const queryClient = useQueryClient();
-
   const mutation = useMutation({
-    mutationFn: createCategory,
+    mutationFn: deleteCategory,
     onSuccess: (data) => {
-      console.log('Category created successfully: ', data);
       queryClient.invalidateQueries({ queryKey: ['categories'] });
+      console.log('Category deleted succesfully: ', data);
     },
   });
-
   return mutation;
 }

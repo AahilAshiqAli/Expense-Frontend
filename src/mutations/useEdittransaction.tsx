@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 const editTransaction = async ({
   id,
@@ -20,9 +20,11 @@ const editTransaction = async ({
   return response.data;
 };
 export function useEditTransaction() {
+  const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: editTransaction,
     onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
       console.log('Transaction edited succesfully: ', data);
     },
   });
