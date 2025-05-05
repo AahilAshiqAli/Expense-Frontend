@@ -1,6 +1,8 @@
 import axios from 'axios';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
+const token = localStorage.getItem('token');
+
 const editTransaction = async ({
   id,
   transaction,
@@ -14,6 +16,7 @@ const editTransaction = async ({
     {
       headers: {
         'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
       },
     },
   );

@@ -3,16 +3,17 @@ import { useEffect, useState } from 'react';
 import { Link } from '@tanstack/react-router';
 import { useCreateTransaction } from '@/mutations/useCreateTransaction';
 import useCategories from '@/hooks/useCategories';
+import useAuth from '@/hooks/useAuth';
 
-export const Route = createLazyFileRoute('/add')({
-  component: AddExpense,
+export const Route = createLazyFileRoute('/(protected)/income')({
+  component: AddIncomeComponent,
 });
 
-const userID = '680d07785da0e057a10ccca6';
-function AddExpense() {
+function AddIncomeComponent() {
   const mutationTransaction = useCreateTransaction();
+  const { data: user } = useAuth();
   const navigate = useNavigate();
-  const [expenseData, setExpenseData] = useState({
+  const [incomeData, setIncomeData] = useState({
     name: '',
     amount: '',
     date: new Date().toISOString().split('T')[0],
@@ -25,8 +26,8 @@ function AddExpense() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setExpenseData({
-      ...expenseData,
+    setIncomeData({
+      ...incomeData,
       [name]: value,
     });
   };
@@ -36,8 +37,8 @@ function AddExpense() {
     if (value === 'add_new') {
       setShowNewCategory(true);
     } else {
-      setExpenseData({
-        ...expenseData,
+      setIncomeData({
+        ...incomeData,
         category: value,
       });
     }
@@ -45,8 +46,8 @@ function AddExpense() {
 
   const handleAddCategory = () => {
     if (newCategory.trim() !== '') {
-      setExpenseData({
-        ...expenseData,
+      setIncomeData({
+        ...incomeData,
         category: newCategory,
       });
       setCategories([...categories, newCategory]);
@@ -68,59 +69,55 @@ function AddExpense() {
   // Simulated functions - these would connect to your app state/backend in the real implementation
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    // Simulate successful submission
     const date = new Date();
-    const expenseDate = new Date(expenseData.date);
-    if (
-      expenseData.name &&
-      expenseData.amount !== '' &&
-      expenseData.category &&
-      date >= expenseDate
-    ) {
+    const incomeDate = new Date(incomeData.date);
+    if (incomeData.name && incomeData.amount !== '' && incomeData.category && date >= incomeDate) {
       const transaction: Transaction = {
         id: 1,
-        name: expenseData.name,
-        type: 'expense',
-        amount: Number(expenseData.amount),
-        date: expenseDate,
-        category: expenseData.category,
-        userId: userID,
+        name: incomeData.name,
+        type: 'income',
+        amount: Number(incomeData.amount),
+        date: incomeDate,
+        category: incomeData.category,
+        userId: user._id,
       };
       mutationTransaction.mutate(transaction);
-      setExpenseData({
+      setIncomeData({
         name: '',
         amount: '',
         date: new Date().toISOString().split('T')[0],
         category: '',
       });
-      alert('Expense added: ' + JSON.stringify(expenseData, null, 2));
+      alert('Income added: ' + JSON.stringify(incomeData, null, 2));
       navigate({ to: '/', replace: true });
-    } else if (!expenseData.name) {
-      alert('Expense name is required');
-    } else if (!expenseData.amount) {
-      alert('Expense amount is required');
-    } else if (!expenseData.category) {
+    } else if (!incomeData.name) {
+      alert('Income name is required');
+    } else if (!incomeData.amount) {
+      alert('Income amount is required');
+    } else if (!incomeData.category) {
       alert('Category is required');
-    } else if (date < expenseDate) {
-      alert('Expense date cannot be in the future');
+    } else if (date < incomeDate) {
+      alert('Income date cannot be in the future');
     } else {
-      alert('Expense not added');
+      alert('Income not added');
     }
   };
 
   return (
     <div className="mx-auto max-w-md rounded-lg bg-white p-6 shadow-lg">
-      <h2 className="mb-6 text-2xl font-bold text-gray-800">Add New Expense</h2>
+      <h2 className="mb-6 text-2xl font-bold text-gray-800">Add New Income</h2>
 
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
           <label htmlFor="name" className="mb-2 block font-medium text-gray-700">
-            Expense Name
+            Income Name
           </label>
           <input
             type="text"
             id="name"
             name="name"
-            value={expenseData.name}
+            value={incomeData.name}
             onChange={handleInputChange}
             className="w-full rounded-md border border-gray-300 px-3 py-2 text-black"
             placeholder="e.g., Grocery shopping"
@@ -136,7 +133,7 @@ function AddExpense() {
             type="number"
             id="amount"
             name="amount"
-            value={expenseData.amount}
+            value={incomeData.amount}
             onChange={handleInputChange}
             className="w-full rounded-md border border-gray-300 px-3 py-2 text-black"
             placeholder="1000"
@@ -154,7 +151,7 @@ function AddExpense() {
             type="date"
             id="date"
             name="date"
-            value={expenseData.date}
+            value={incomeData.date}
             onChange={handleInputChange}
             className="w-full rounded-md border border-gray-300 px-3 py-2 text-black"
             placeholder={new Date().toISOString().split('T')[0]}
@@ -169,23 +166,19 @@ function AddExpense() {
           <select
             id="category"
             name="category"
-            value={expenseData.category}
+            value={incomeData.category}
             onChange={handleCategoryChange}
             className="w-full rounded-md border border-gray-300 px-3 py-2 text-black"
             required={!showNewCategory}
           >
-            {/* Here, required is used to ensure that when showNewCategory is false, user is not giving any new Category then user needs to fill this field
-            Else not required*/}
-
             <option value="" disabled>
               Select Category
             </option>
-            {categories !== undefined &&
-              categories.map((category, index) => (
-                <option key={index} value={category}>
-                  {category}
-                </option>
-              ))}
+            {categories.map((category, index) => (
+              <option key={index} value={category}>
+                {category}
+              </option>
+            ))}
             <option value="add_new">+ Add New Category</option>
           </select>
         </div>
@@ -224,10 +217,12 @@ function AddExpense() {
             type="submit"
             className="rounded-md bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
           >
-            Save Expense
+            Save Income
           </button>
         </div>
       </form>
     </div>
   );
 }
+
+export default AddIncomeComponent;

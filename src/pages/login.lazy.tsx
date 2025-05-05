@@ -29,7 +29,6 @@ function LoginScreen() {
       console.log('Login successful: ', data);
       if (data) {
         localStorage.setItem('token', data.token);
-        localStorage.setItem('userId', data.userId);
         navigate({ to: '/', replace: true });
       }
     },

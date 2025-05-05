@@ -26,28 +26,21 @@ import {
 } from '@/utils/calculateHeader';
 import categoryUtils from '@/utils/categoryUtils';
 import useCategories from '@/hooks/useCategories';
-import { useNavigate } from '@tanstack/react-router';
+import NoTransaction from '@/components/ui/NoTransaction';
 
-export const Route = createLazyFileRoute('/')({
+export const Route = createLazyFileRoute('/(protected)/')({
   component: ExpenseTracker,
 });
 
 function ExpenseTracker() {
-  const navigate = useNavigate();
-  localStorage.setItem(
-    'token',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4MGQwNzc4NWRhMGUwNTdhMTBjY2NhNiIsImVtYWlsIjoiam9obkBleGFtcGxlLmNvbSIsImlhdCI6MTc0NTY4NDM0NCwiZXhwIjoxNzQ4Mjc2MzQ0fQ.JWuxQ0F-weWkxrnAsqXbJgzx2oELp-FtUxYnQFEYXto',
-  );
-  const { data: transactions = [], isLoading, isError } = useAllTransactions();
+  const { data: transactions = [] } = useAllTransactions();
   const activePeriod = useState('This Month')[0];
 
   const category = categoryUtils(transactions);
   const { data: categories } = useCategories();
 
   const budgetByCategory: Record<string, number> = {};
-  // if (1 == 1) {
-  //   navigate({ to: '/login', replace: true });
-  // }
+
   if (!categories) return <div>Loading...</div>;
   for (let i = 0; i < categories.length; i++) {
     budgetByCategory[categories[i].name] = categories[i].monthlyLimit;
@@ -67,19 +60,10 @@ function ExpenseTracker() {
     }
   }
 
-  if (isLoading) return <div>Loading...</div>;
-
-  if (isError) return <div>Error loading transactions.</div>;
+  console.log(transactions);
 
   return (
     <>
-      {/* <div className="flex w-full items-center justify-end p-4 ">
-        <button className="flex items-center rounded-lg border border-gray-200 bg-white px-8 py-2 text-sm font-medium text-gray-700">
-          <Filter className="mr-2 h-8 w-8" />
-          Filter
-        </button>
-      </div> */}
-
       <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
           <div className="mb-4 flex items-start justify-between">
@@ -186,7 +170,7 @@ function ExpenseTracker() {
             </div>
 
             <div className="space-y-4">
-              {transactions &&
+              {transactions ? (
                 transactions.map((transaction) => (
                   <div
                     key={transaction.id}
@@ -217,7 +201,10 @@ function ExpenseTracker() {
                       {Currency(transaction.amount) || Currency(0)}
                     </span>
                   </div>
-                ))}
+                ))
+              ) : (
+                <NoTransaction />
+              )}
             </div>
           </div>
         </div>

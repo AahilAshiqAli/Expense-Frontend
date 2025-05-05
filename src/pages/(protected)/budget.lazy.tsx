@@ -7,15 +7,15 @@ import { useDeleteCategory } from '@/mutations/useDeleteCategory';
 import SuggestionsBox from '@/components/ui/SuggestionsBox';
 import categoryUtils from '@/utils/categoryUtils';
 import useAllTransactions from '@/hooks/useAllTransactions';
+import useAuth from '@/hooks/useAuth';
 
-export const Route = createLazyFileRoute('/budget')({
+export const Route = createLazyFileRoute('/(protected)/budget')({
   component: ManageBudgets,
 });
 
-const userId = '680d07785da0e057a10ccca6';
-
 function ManageBudgets() {
   const navigate = useNavigate();
+  const { data: user } = useAuth();
   const [newCategory, setNewCategory] = useState('');
   const [newBudget, setNewBudget] = useState('');
   const [showAddCategory, setShowAddCategory] = useState(false);
@@ -48,7 +48,7 @@ function ManageBudgets() {
     const categoryToUpdate: Category = {
       name: category,
       monthlyLimit: Number(value),
-      userId: userId,
+      userId: user._id,
     };
 
     mutationEditCategory.mutate({ id: categoryToFindId, category: categoryToUpdate });
@@ -59,7 +59,7 @@ function ManageBudgets() {
       const category: Category = {
         name: newCategory,
         monthlyLimit: Number(newBudget),
-        userId: userId,
+        userId: user._id,
       };
       mutationCategory.mutate(category);
 

@@ -19,6 +19,4 @@ declare global {
     monthlyLimit: number;
     userId: string;
   }
-
-  const userID = '680d07785da0e057a10ccca6';
 }

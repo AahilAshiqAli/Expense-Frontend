@@ -13,23 +13,21 @@ import { createFileRoute } from '@tanstack/react-router'
 // Import Routes
 
 import { Route as rootRoute } from './pages/__root'
+import { Route as protectedRouteImport } from './pages/(protected)/route'
 
 // Create Virtual Routes
 
-const TransactionsLazyImport = createFileRoute('/transactions')()
 const LoginLazyImport = createFileRoute('/login')()
-const IncomeLazyImport = createFileRoute('/income')()
-const BudgetLazyImport = createFileRoute('/budget')()
-const AddLazyImport = createFileRoute('/add')()
-const IndexLazyImport = createFileRoute('/')()
+const SplatLazyImport = createFileRoute('/$')()
+const protectedIndexLazyImport = createFileRoute('/(protected)/')()
+const protectedTransactionsLazyImport = createFileRoute(
+  '/(protected)/transactions',
+)()
+const protectedIncomeLazyImport = createFileRoute('/(protected)/income')()
+const protectedBudgetLazyImport = createFileRoute('/(protected)/budget')()
+const protectedAddLazyImport = createFileRoute('/(protected)/add')()
 
 // Create/Update Routes
-
-const TransactionsLazyRoute = TransactionsLazyImport.update({
-  id: '/transactions',
-  path: '/transactions',
-  getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./pages/transactions.lazy').then((d) => d.Route))
 
 const LoginLazyRoute = LoginLazyImport.update({
   id: '/login',
@@ -37,60 +35,75 @@ const LoginLazyRoute = LoginLazyImport.update({
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./pages/login.lazy').then((d) => d.Route))
 
-const IncomeLazyRoute = IncomeLazyImport.update({
-  id: '/income',
-  path: '/income',
+const SplatLazyRoute = SplatLazyImport.update({
+  id: '/$',
+  path: '/$',
   getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./pages/income.lazy').then((d) => d.Route))
+} as any).lazy(() => import('./pages/$.lazy').then((d) => d.Route))
 
-const BudgetLazyRoute = BudgetLazyImport.update({
-  id: '/budget',
-  path: '/budget',
+const protectedRouteRoute = protectedRouteImport.update({
+  id: '/(protected)',
   getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./pages/budget.lazy').then((d) => d.Route))
+} as any)
 
-const AddLazyRoute = AddLazyImport.update({
-  id: '/add',
-  path: '/add',
-  getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./pages/add.lazy').then((d) => d.Route))
+const protectedIndexLazyRoute = protectedIndexLazyImport
+  .update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => protectedRouteRoute,
+  } as any)
+  .lazy(() => import('./pages/(protected)/index.lazy').then((d) => d.Route))
 
-const IndexLazyRoute = IndexLazyImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./pages/index.lazy').then((d) => d.Route))
+const protectedTransactionsLazyRoute = protectedTransactionsLazyImport
+  .update({
+    id: '/transactions',
+    path: '/transactions',
+    getParentRoute: () => protectedRouteRoute,
+  } as any)
+  .lazy(() =>
+    import('./pages/(protected)/transactions.lazy').then((d) => d.Route),
+  )
+
+const protectedIncomeLazyRoute = protectedIncomeLazyImport
+  .update({
+    id: '/income',
+    path: '/income',
+    getParentRoute: () => protectedRouteRoute,
+  } as any)
+  .lazy(() => import('./pages/(protected)/income.lazy').then((d) => d.Route))
+
+const protectedBudgetLazyRoute = protectedBudgetLazyImport
+  .update({
+    id: '/budget',
+    path: '/budget',
+    getParentRoute: () => protectedRouteRoute,
+  } as any)
+  .lazy(() => import('./pages/(protected)/budget.lazy').then((d) => d.Route))
+
+const protectedAddLazyRoute = protectedAddLazyImport
+  .update({
+    id: '/add',
+    path: '/add',
+    getParentRoute: () => protectedRouteRoute,
+  } as any)
+  .lazy(() => import('./pages/(protected)/add.lazy').then((d) => d.Route))
 
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
+    '/(protected)': {
+      id: '/(protected)'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexLazyImport
+      preLoaderRoute: typeof protectedRouteImport
       parentRoute: typeof rootRoute
     }
-    '/add': {
-      id: '/add'
-      path: '/add'
-      fullPath: '/add'
-      preLoaderRoute: typeof AddLazyImport
-      parentRoute: typeof rootRoute
-    }
-    '/budget': {
-      id: '/budget'
-      path: '/budget'
-      fullPath: '/budget'
-      preLoaderRoute: typeof BudgetLazyImport
-      parentRoute: typeof rootRoute
-    }
-    '/income': {
-      id: '/income'
-      path: '/income'
-      fullPath: '/income'
-      preLoaderRoute: typeof IncomeLazyImport
+    '/$': {
+      id: '/$'
+      path: '/$'
+      fullPath: '/$'
+      preLoaderRoute: typeof SplatLazyImport
       parentRoute: typeof rootRoute
     }
     '/login': {
@@ -100,78 +113,133 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginLazyImport
       parentRoute: typeof rootRoute
     }
-    '/transactions': {
-      id: '/transactions'
+    '/(protected)/add': {
+      id: '/(protected)/add'
+      path: '/add'
+      fullPath: '/add'
+      preLoaderRoute: typeof protectedAddLazyImport
+      parentRoute: typeof protectedRouteImport
+    }
+    '/(protected)/budget': {
+      id: '/(protected)/budget'
+      path: '/budget'
+      fullPath: '/budget'
+      preLoaderRoute: typeof protectedBudgetLazyImport
+      parentRoute: typeof protectedRouteImport
+    }
+    '/(protected)/income': {
+      id: '/(protected)/income'
+      path: '/income'
+      fullPath: '/income'
+      preLoaderRoute: typeof protectedIncomeLazyImport
+      parentRoute: typeof protectedRouteImport
+    }
+    '/(protected)/transactions': {
+      id: '/(protected)/transactions'
       path: '/transactions'
       fullPath: '/transactions'
-      preLoaderRoute: typeof TransactionsLazyImport
-      parentRoute: typeof rootRoute
+      preLoaderRoute: typeof protectedTransactionsLazyImport
+      parentRoute: typeof protectedRouteImport
+    }
+    '/(protected)/': {
+      id: '/(protected)/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof protectedIndexLazyImport
+      parentRoute: typeof protectedRouteImport
     }
   }
 }
 
 // Create and export the route tree
 
+interface protectedRouteRouteChildren {
+  protectedAddLazyRoute: typeof protectedAddLazyRoute
+  protectedBudgetLazyRoute: typeof protectedBudgetLazyRoute
+  protectedIncomeLazyRoute: typeof protectedIncomeLazyRoute
+  protectedTransactionsLazyRoute: typeof protectedTransactionsLazyRoute
+  protectedIndexLazyRoute: typeof protectedIndexLazyRoute
+}
+
+const protectedRouteRouteChildren: protectedRouteRouteChildren = {
+  protectedAddLazyRoute: protectedAddLazyRoute,
+  protectedBudgetLazyRoute: protectedBudgetLazyRoute,
+  protectedIncomeLazyRoute: protectedIncomeLazyRoute,
+  protectedTransactionsLazyRoute: protectedTransactionsLazyRoute,
+  protectedIndexLazyRoute: protectedIndexLazyRoute,
+}
+
+const protectedRouteRouteWithChildren = protectedRouteRoute._addFileChildren(
+  protectedRouteRouteChildren,
+)
+
 export interface FileRoutesByFullPath {
-  '/': typeof IndexLazyRoute
-  '/add': typeof AddLazyRoute
-  '/budget': typeof BudgetLazyRoute
-  '/income': typeof IncomeLazyRoute
+  '/': typeof protectedIndexLazyRoute
+  '/$': typeof SplatLazyRoute
   '/login': typeof LoginLazyRoute
-  '/transactions': typeof TransactionsLazyRoute
+  '/add': typeof protectedAddLazyRoute
+  '/budget': typeof protectedBudgetLazyRoute
+  '/income': typeof protectedIncomeLazyRoute
+  '/transactions': typeof protectedTransactionsLazyRoute
 }
 
 export interface FileRoutesByTo {
-  '/': typeof IndexLazyRoute
-  '/add': typeof AddLazyRoute
-  '/budget': typeof BudgetLazyRoute
-  '/income': typeof IncomeLazyRoute
+  '/$': typeof SplatLazyRoute
   '/login': typeof LoginLazyRoute
-  '/transactions': typeof TransactionsLazyRoute
+  '/add': typeof protectedAddLazyRoute
+  '/budget': typeof protectedBudgetLazyRoute
+  '/income': typeof protectedIncomeLazyRoute
+  '/transactions': typeof protectedTransactionsLazyRoute
+  '/': typeof protectedIndexLazyRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
-  '/': typeof IndexLazyRoute
-  '/add': typeof AddLazyRoute
-  '/budget': typeof BudgetLazyRoute
-  '/income': typeof IncomeLazyRoute
+  '/(protected)': typeof protectedRouteRouteWithChildren
+  '/$': typeof SplatLazyRoute
   '/login': typeof LoginLazyRoute
-  '/transactions': typeof TransactionsLazyRoute
+  '/(protected)/add': typeof protectedAddLazyRoute
+  '/(protected)/budget': typeof protectedBudgetLazyRoute
+  '/(protected)/income': typeof protectedIncomeLazyRoute
+  '/(protected)/transactions': typeof protectedTransactionsLazyRoute
+  '/(protected)/': typeof protectedIndexLazyRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/add' | '/budget' | '/income' | '/login' | '/transactions'
-  fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/add' | '/budget' | '/income' | '/login' | '/transactions'
-  id:
-    | '__root__'
+  fullPaths:
     | '/'
+    | '/$'
+    | '/login'
     | '/add'
     | '/budget'
     | '/income'
-    | '/login'
     | '/transactions'
+  fileRoutesByTo: FileRoutesByTo
+  to: '/$' | '/login' | '/add' | '/budget' | '/income' | '/transactions' | '/'
+  id:
+    | '__root__'
+    | '/(protected)'
+    | '/$'
+    | '/login'
+    | '/(protected)/add'
+    | '/(protected)/budget'
+    | '/(protected)/income'
+    | '/(protected)/transactions'
+    | '/(protected)/'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
-  IndexLazyRoute: typeof IndexLazyRoute
-  AddLazyRoute: typeof AddLazyRoute
-  BudgetLazyRoute: typeof BudgetLazyRoute
-  IncomeLazyRoute: typeof IncomeLazyRoute
+  protectedRouteRoute: typeof protectedRouteRouteWithChildren
+  SplatLazyRoute: typeof SplatLazyRoute
   LoginLazyRoute: typeof LoginLazyRoute
-  TransactionsLazyRoute: typeof TransactionsLazyRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexLazyRoute: IndexLazyRoute,
-  AddLazyRoute: AddLazyRoute,
-  BudgetLazyRoute: BudgetLazyRoute,
-  IncomeLazyRoute: IncomeLazyRoute,
+  protectedRouteRoute: protectedRouteRouteWithChildren,
+  SplatLazyRoute: SplatLazyRoute,
   LoginLazyRoute: LoginLazyRoute,
-  TransactionsLazyRoute: TransactionsLazyRoute,
 }
 
 export const routeTree = rootRoute
@@ -184,31 +252,46 @@ export const routeTree = rootRoute
     "__root__": {
       "filePath": "__root.tsx",
       "children": [
-        "/",
-        "/add",
-        "/budget",
-        "/income",
-        "/login",
-        "/transactions"
+        "/(protected)",
+        "/$",
+        "/login"
       ]
     },
-    "/": {
-      "filePath": "index.lazy.tsx"
+    "/(protected)": {
+      "filePath": "(protected)/route.tsx",
+      "children": [
+        "/(protected)/add",
+        "/(protected)/budget",
+        "/(protected)/income",
+        "/(protected)/transactions",
+        "/(protected)/"
+      ]
     },
-    "/add": {
-      "filePath": "add.lazy.tsx"
-    },
-    "/budget": {
-      "filePath": "budget.lazy.tsx"
-    },
-    "/income": {
-      "filePath": "income.lazy.tsx"
+    "/$": {
+      "filePath": "$.lazy.tsx"
     },
     "/login": {
       "filePath": "login.lazy.tsx"
     },
-    "/transactions": {
-      "filePath": "transactions.lazy.tsx"
+    "/(protected)/add": {
+      "filePath": "(protected)/add.lazy.tsx",
+      "parent": "/(protected)"
+    },
+    "/(protected)/budget": {
+      "filePath": "(protected)/budget.lazy.tsx",
+      "parent": "/(protected)"
+    },
+    "/(protected)/income": {
+      "filePath": "(protected)/income.lazy.tsx",
+      "parent": "/(protected)"
+    },
+    "/(protected)/transactions": {
+      "filePath": "(protected)/transactions.lazy.tsx",
+      "parent": "/(protected)"
+    },
+    "/(protected)/": {
+      "filePath": "(protected)/index.lazy.tsx",
+      "parent": "/(protected)"
     }
   }
 }

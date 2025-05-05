@@ -7,13 +7,11 @@ import { calculateBalance, calculateIncome, calculateExpenses } from '@/utils/ca
 import useCategories from '@/hooks/useCategories';
 import { useNavigate } from '@tanstack/react-router';
 
-export const Route = createLazyFileRoute('/transactions')({
+export const Route = createLazyFileRoute('/(protected)/transactions')({
   component: TransactionsPage,
 });
 
-const token =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4MGQwNzc4NWRhMGUwNTdhMTBjY2NhNiIsImVtYWlsIjoiam9obkBleGFtcGxlLmNvbSIsImlhdCI6MTc0NTY4NDM0NCwiZXhwIjoxNzQ4Mjc2MzQ0fQ.JWuxQ0F-weWkxrnAsqXbJgzx2oELp-FtUxYnQFEYXto';
-
+const token = localStorage.getItem('token');
 // whenever anything inside queryKey changes, then query will be re-run
 function TransactionsPage() {
   const navigate = useNavigate();
@@ -22,7 +20,7 @@ function TransactionsPage() {
     queryKey: ['transactions-paginated', { page }],
     queryFn: async () => {
       const response = await axios.get<Transaction[]>(
-        `http://localhost:3000/api/v1/expense/transactions-paginated/${userID}`,
+        `http://localhost:3000/api/v1/expense/transactions-paginated/`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
