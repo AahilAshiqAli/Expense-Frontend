@@ -4,8 +4,6 @@ import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { calculateBalance, calculateIncome, calculateExpenses } from '@/utils/calculateHeader';
-import useCategories from '@/hooks/useCategories';
-import { useNavigate } from '@tanstack/react-router';
 
 export const Route = createLazyFileRoute('/(protected)/transactions')({
   component: TransactionsPage,
@@ -14,8 +12,9 @@ export const Route = createLazyFileRoute('/(protected)/transactions')({
 const token = localStorage.getItem('token');
 // whenever anything inside queryKey changes, then query will be re-run
 function TransactionsPage() {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const [page, setPage] = useState(1);
+
   const { data, isLoading, isSuccess } = useQuery({
     queryKey: ['transactions-paginated', { page }],
     queryFn: async () => {
@@ -39,29 +38,14 @@ function TransactionsPage() {
       if (data === undefined && page > 1) {
         alert('No more transactions to show');
         setPage(page - 1);
-      } else if (data === undefined && page === 1) {
-        alert('No transactions found. Redirecting to home page.');
-        navigate({ to: '/', replace: true });
+        // } else if (data === undefined && page === 1) {
+        //   alert('No transactions found. Redirecting to home page.');
+        //   navigate({ to: '/', replace: true });
       }
     }
   }, [isSuccess, data]);
 
   let transactions: Transaction[] = [];
-
-  const { data: categories } = useCategories();
-
-  const categoryColors: { [key: string]: string } = {};
-  if (categories) {
-    const colors = [
-      'bg-blue-100 text-blue-800',
-      'bg-purple-100 text-purple-800 ',
-      'bg-pink-500 text-pink-800',
-      'bg-yellow-100 text-yellow-800',
-    ];
-    for (let i = 0; i < categories.length; i++) {
-      categoryColors[categories[i].name] = colors[i % colors.length];
-    }
-  }
 
   if (data) {
     transactions = data;
@@ -75,6 +59,23 @@ function TransactionsPage() {
     );
   }
 
+  const categoryColors: { [key: string]: string } = {};
+  const categories: string[] = [];
+  if (transactions) {
+    for (let i = 0; i < transactions.length; i++) {
+      categories.push(transactions[i].category);
+    }
+
+    const colors = [
+      'bg-blue-100 text-blue-800',
+      'bg-purple-100 text-purple-800 ',
+      'bg-pink-500 text-pink-800',
+      'bg-yellow-100 text-yellow-800',
+    ];
+    for (let i = 0; i < categories.length; i++) {
+      categoryColors[categories[i]] = colors[i % colors.length];
+    }
+  }
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="overflow-hidden rounded-xl bg-white shadow-md">

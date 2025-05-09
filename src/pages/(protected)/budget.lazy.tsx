@@ -106,7 +106,7 @@ function ManageBudgets() {
       }
       return suggestions.filter((suggestion) => !cat.includes(suggestion));
     }
-    return [];
+    return suggestions;
   };
 
   return (

@@ -5,6 +5,9 @@ type spendingBycategory = {
 export default function calculateSpendingByCategory(transactions: Transaction[]) {
   const spendingByCategory: spendingBycategory = {};
   for (let i = 0; i < transactions.length; i++) {
+    if (transactions[i].type === 'income') {
+      continue;
+    }
     if (transactions[i].category in Object.keys(spendingByCategory)) {
       spendingByCategory[transactions[i].category] += transactions[i].amount;
     } else {

@@ -1,61 +1,98 @@
-Commitlintrc.json:
-This file is to set up a config file for commitlint. It is used to enforce commit message conventions.
+# Expense Tracker
 
-Prettierrc.json:
-This file is to set up a config file for prettier. It is used to format the code.
+This repository only contains the frontend. To access the backend, please visit the [backend repository](https://github.com/AahilAshiqAli/Expense-Backend).
 
-Eslintrc.cjs:
-This file is to set up a config file for eslint.
-.cjs is used to indicate that this file is a CommonJS module.
-Commonly EsLint config works better with CommonJS modules.
+This project aims to build a robust and optimized **Expense Tracker**.
 
-.eslint.config.js:
-Tis file is also used to set up a config file for eslint.
-The difference between previous configuartion file is that it works if project is CommonJS module.
-But this will work if project works with ES MOdules
+## 🔧 Features
 
-.editorconfig:
-This file is to set up a config file for editors /IDEs. like you want lf or crlf line endings.
+- 📊 **Spending Breakdown by Category**
 
-.env.sample:
-PORT number etc
+  - View monthly graphs for spending.
+  - Visual representation of each category's spending in relation to total expenses.
 
-tsconfig.app.json:
-This defines typescript should be compiled with ES2020 target.(language level)
-configuring typescript compilation
+- 📁 **Budgeting by Category**
 
-tsconfig.node.json:
-This file is to configure typescript for server side code present in the directory
+  - Create custom categories.
+  - Set limits on your budget per category.
+  - Track how much you've spent against your set budget for each category.
 
-tsconfig.json:
-This file is to set up root ts config file which binds all other files
+- 📄 **Transaction History**
 
-env.ts:
-it is also a file which stores environment variables like title of application => uses Zod
-provides type safety at run time. makes it easier to debug at runtime.. issues bcz of envs
-Will explore further
+  - Paginated view of all transactions (both income and expenses).
 
-vite-env.d.ts:
-provides type safety at compile time
-provides auto complete for environment variables
+- ➕ **Add Expense / Income**
 
-These both files use .env.sample for importing environment variables.
-Here, env are loaded in vite.config.ts which works in Node environment. There parseAsync is used to get all files starting with
-.env like .env.sample, .env.dev etc and all are laoded using loadEnv during run tiime.
+  - Simple form to add new transactions.
 
-If we are doing parsing in env.ts, we would have to use import.meta.env.VITE_APP_TITLE in our code. since env.ts file works on browser.
+- ⚙️ **Optimization Focus**
 
-The whole src works on browser environment and everything outside of src works on Node environment.
+  - No state management tools like Zustand used.
+  - Fully optimized using **React Query**.
+  - Clear distinction between **server state** and **client state**.
 
-global.d.ts:
-this file is to define global types which are then available in all files without importing them.
+- 🚨 **Error Handling**
 
-difference between process.env and import.meta.env is process.env only provides access to env during run time but other one provides at run time as well as built time. Normally import.meta.env is used for front end and other is used in backend
+  - All errors are gracefully handled.
+  - Custom **error page** is included.
 
-styles.css:
-This file is to define global styles for the application.
-like any tailwind configuration can be defined here.
-This file has styles for tailwind, and shadcn
+- 👥 **Multi-user Support**
 
-components.json:
-This file is for shadcn configurations. Here you can set your base color to Neutrla or Stale
+  - Includes a **login page**.
+  - Token is stored in `localStorage`.
+  - Regular checks via a `me` API to ensure the token is valid and user is authenticated.
+
+- 🔐 **Protected Routes**
+
+  - All routes are protected based on authentication.
+
+- 📦 **Clean Architecture**
+  - **Separation of Concerns** is strictly followed.
+  - Logic is encapsulated using the **Repository Pattern**.
+
+## 🛠️ Project Backend Structure
+
+    Routes
+    ↓
+    Middleware
+    ↓
+    Controllers (only handle request/response)
+    ↓
+    Services (OOP-based business logic)
+    ↓
+    Repositories (OOP inheritance for data access)
+    ↓
+    Entities / Models
+
+---
+
+This project follows best development practices, with well-structured modules and a focus on scalability and maintainability.
+
+---
+
+<h1>How to run the code</h1>
+
+1. **Clone the repository**
+
+```bash
+git clone https://github.com/AahilAshiqAli/Expense-Frontend.git
+```
+
+2. **Navigate to the project folder**
+
+```bash
+cd Expense-Frontend
+```
+
+3. **Install dependencies**
+   if you dont have pnpm installed, visit this link: https://pnpm.io/installation
+
+```bash
+pnpm install
+```
+
+3. Start the development server
+
+```bash
+pnpm run dev
+```

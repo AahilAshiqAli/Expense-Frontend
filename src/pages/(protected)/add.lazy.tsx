@@ -2,6 +2,7 @@ import { createLazyFileRoute, useNavigate } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { Link } from '@tanstack/react-router';
 import { useCreateTransaction } from '@/mutations/useCreateTransaction';
+import useAllTransactions from '@/hooks/useAllTransactions';
 import useCategories from '@/hooks/useCategories';
 import useAuth from '@/hooks/useAuth';
 
@@ -11,6 +12,7 @@ export const Route = createLazyFileRoute('/(protected)/add')({
 
 function AddExpense() {
   const mutationTransaction = useCreateTransaction();
+  const { data: transactions } = useAllTransactions();
   const navigate = useNavigate();
   const { data: user } = useAuth();
   const [expenseData, setExpenseData] = useState({
@@ -57,16 +59,24 @@ function AddExpense() {
   };
 
   useEffect(() => {
+    const cat: string[] = [];
     if (data) {
-      const cat: string[] = [];
       for (let i = 0; i < data.length; i++) {
         cat.push(data[i].name);
       }
-      setCategories(cat);
     }
-  }, [data]);
 
-  // Simulated functions - these would connect to your app state/backend in the real implementation
+    if (transactions) {
+      for (let i = 0; i < transactions.length; i++) {
+        if (transactions[i].type === 'income') continue;
+        if (transactions[i].category in cat) continue;
+        cat.push(transactions[i].category);
+      }
+    }
+    const uniqueCategories = [...new Set(cat)];
+    setCategories(uniqueCategories);
+  }, [data, transactions]);
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const date = new Date();

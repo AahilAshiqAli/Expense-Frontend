@@ -1,7 +1,7 @@
 import { createLazyFileRoute } from '@tanstack/react-router';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import {
-  ChevronDown,
+  // ChevronDown,
   DollarSign,
   Calendar,
   PieChart,
@@ -34,16 +34,19 @@ export const Route = createLazyFileRoute('/(protected)/')({
 
 function ExpenseTracker() {
   const { data: transactions = [] } = useAllTransactions();
-  const activePeriod = useState('This Month')[0];
+  // const activePeriod = useState('This Month')[0];
 
   const category = categoryUtils(transactions);
   const { data: categories } = useCategories();
 
+  // if (isLoading || isError) return <div className="text-black">Loading...</div>;
+
   const budgetByCategory: Record<string, number> = {};
 
-  if (!categories) return <div>Loading...</div>;
-  for (let i = 0; i < categories.length; i++) {
-    budgetByCategory[categories[i].name] = categories[i].monthlyLimit;
+  if (categories) {
+    for (let i = 0; i < categories.length; i++) {
+      budgetByCategory[categories[i].name] = categories[i].monthlyLimit;
+    }
   }
 
   const spendingByCategory: Record<string, number> = calculateSpendingByCategory(transactions);
@@ -71,7 +74,7 @@ function ExpenseTracker() {
               <DollarSign className="h-6 w-6 text-blue-500" />
             </div>
             <span className="flex items-center text-sm font-medium text-green-500">
-              <ArrowUpRight className="mr-1 h-4 w-4" /> 8.1%
+              {/* <ArrowUpRight className="mr-1 h-4 w-4" /> 8.1% */}
             </span>
           </div>
           <h3 className="mb-1 text-sm text-gray-500">Total Balance</h3>
@@ -86,7 +89,7 @@ function ExpenseTracker() {
               <ArrowDownRight className="h-6 w-6 text-red-500" />
             </div>
             <span className="flex items-center text-sm font-medium text-red-500">
-              <ArrowUpRight className="mr-1 h-4 w-4" /> 12.4%
+              {/* <ArrowUpRight className="mr-1 h-4 w-4" /> 12.4% */}
             </span>
           </div>
           <h3 className="mb-1 text-sm text-gray-500">Total Expenses</h3>
@@ -99,7 +102,7 @@ function ExpenseTracker() {
               <ArrowUpRight className="h-6 w-6 text-green-500" />
             </div>
             <span className="flex items-center text-sm font-medium text-green-500">
-              <ArrowUpRight className="mr-1 h-4 w-4" /> 3.2%
+              {/* <ArrowUpRight className="mr-1 h-4 w-4" /> 3.2% */}
             </span>
           </div>
           <h3 className="mb-1 text-sm text-gray-500">Total Income</h3>
@@ -115,7 +118,7 @@ function ExpenseTracker() {
             </div>
             <div className="relative">
               <button className="flex items-center text-sm font-medium text-gray-700">
-                {activePeriod} <ChevronDown className="ml-1 h-4 w-4" />
+                {/* {activePeriod} <ChevronDown className="ml-1 h-4 w-4" /> */}
               </button>
             </div>
           </div>
@@ -135,7 +138,7 @@ function ExpenseTracker() {
             <div className="mb-6 flex items-center justify-between">
               <h2 className="text-lg font-semibold text-gray-800">Expense Overview</h2>
               <button className="flex items-center text-sm text-gray-500">
-                This Month <ChevronDown className="ml-1 h-4 w-4" />
+                {/* This Month <ChevronDown className="ml-1 h-4 w-4" /> */}
               </button>
             </div>
 
@@ -216,7 +219,7 @@ function ExpenseTracker() {
             <div className="mb-6 flex items-center justify-between">
               <h2 className="text-lg font-semibold text-gray-800">Spending by Category</h2>
               <button className="flex items-center text-sm text-gray-500">
-                This Month <ChevronDown className="ml-1 h-4 w-4" />
+                {/* This Month <ChevronDown className="ml-1 h-4 w-4" /> */}
               </button>
             </div>
 
@@ -259,7 +262,7 @@ function ExpenseTracker() {
             <div className="mb-6 flex items-center justify-between">
               <h2 className="text-lg font-semibold text-gray-800">Budget Status</h2>
               <button className="flex items-center text-sm text-gray-500">
-                This Month <ChevronDown className="ml-1 h-4 w-4" />
+                {/* This Month <ChevronDown className="ml-1 h-4 w-4" /> */}
               </button>
             </div>
 
